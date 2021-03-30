@@ -23,9 +23,9 @@ import java.util.Arrays;
 import java.util.Properties;
 
 @SuppressWarnings("deprecation")
-public class ElasticSearchConsumer {
+public class ElasticSearchConsumerManualOffsetCommit {
 
-   static Logger logger = LoggerFactory.getLogger(ElasticSearchConsumer.class.getName());
+   static Logger logger = LoggerFactory.getLogger(ElasticSearchConsumerManualOffsetCommit.class.getName());
 
     public static void main(String[] args) throws IOException {
         RestHighLevelClient client = createESClient();
@@ -34,16 +34,10 @@ public class ElasticSearchConsumer {
         String elasticIndex = "twitter-es-index";
         String indexType = "tweet"; //this can be any string , just required to pass into constructor
 
-        //TESTING ES INSERTION
-        // String doc = "{ \"foo\" : \"bar\"}";
-        // IndexRequest indexRequest= new IndexRequest("twitter-es-index" ).source(doc , XContentType.JSON);
-        // IndexResponse indexResponse = client.index(indexRequest , RequestOptions.DEFAULT);
-        // String id =  indexResponse.getId();
-        // logger.info(id + " sent to ES");
-
-
         while(true){
             ConsumerRecords<String,String> records =  consumer.poll(Duration.ofSeconds(2));
+
+            logger.info("received : " + records.count() + " records");
 
             //insert data into ES
             for(ConsumerRecord<String,String> r : records){
@@ -57,15 +51,16 @@ public class ElasticSearchConsumer {
                 String id =  indexResponse.getId();
                 logger.info(id + " sent to ES");
 
-//                try {
-//                    Thread.sleep(2000); //intoducing small delay
-//                }catch (Exception e){
-//
-//                }
+                try {
+                    Thread.sleep(20); //intoducing small delay
+                }catch (Exception e){
 
-
-
+                }
             }
+
+            logger.info("Commiting offsets");
+            consumer.commitSync();
+            logger.info("Offset committed");
         }
 
         //close ES client gracefully
@@ -88,6 +83,13 @@ public class ElasticSearchConsumer {
         properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG , StringDeserializer.class.getName());
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG , groupId);
         properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG , "earliest"); //earliest : read from beginning of topic
+
+        //MANUAL OFFEST COMMIT PROPERTIEs
+        properties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG , "false");
+
+        //this is just for demo purposes , to fetch 5 records only
+        properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG , "5");
+
 
         //step-2 : create consumer
         KafkaConsumer<String,String> consumer = new KafkaConsumer<String, String>(properties);
