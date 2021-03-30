@@ -6,9 +6,10 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="twitter-producer" />
+        <module name="kafka-streams-filter-tweets" />
         <module name="simple-producer-consumer" />
         <module name="twitter-consumer-es" />
-        <module name="twitter-producer" />
       </profile>
     </annotationProcessing>
   </component>

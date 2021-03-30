@@ -12,6 +12,7 @@
         <module>twitter-consumer-es</module>
         <module>twitter-producer</module>
         <module>simple-producer-consumer</module>
+        <module>kafka-streams-filter-tweets</module>
     </modules>
 
 
